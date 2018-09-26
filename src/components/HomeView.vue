@@ -16,7 +16,7 @@
     <router-link class="add-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored" to="/post">
       <i class="material-icons">add</i>
     </router-link>
-    <router-link class="take-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored" to="/camera">
+      <router-link class="take-picture-button mdl-button mdl-js-button mdl-button--fab mdl-button--colored" to="/camera">
       <i class="material-icons">camera_alt</i>
     </router-link>
   </div>
@@ -28,11 +28,39 @@
     methods: {
       displayDetails (id) {
         this.$router.push({name: 'detail', params: { id: id }})
+      },
+      getCats () {
+        if (navigator.onLine) {
+          this.saveCatsToCache()
+          return this.$root.cat
+        } else {
+          return JSON.parse(localStorage.getItem('cats'))
+        }
+      },
+      saveCatsToCache () {
+        this.$root.$firebaseRefs.cat.orderByChild('created_at').once('value', (snapchot) => {
+          let cachedCats = []
+          snapchot.forEach((catSnapchot) => {
+            let cachedCat = catSnapchot.val()
+            cachedCat['.key'] = catSnapchot.key
+            cachedCats.push(cachedCat)
+          })
+          localStorage.setItem('cats', JSON.stringify(cachedCats))
+        })
       }
+    },
+    mounted () {
+      this.saveCatsToCache()
     }
   }
 </script>
 <style scoped>
+.take-picture-button {
+  position: fixed;
+  right: 24px;
+  bottom: 90px;
+  z-index: 5;
+}
 .add-picture-button {
     position: fixed;
     right: 24px;
